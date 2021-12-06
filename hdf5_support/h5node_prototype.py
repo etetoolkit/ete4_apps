@@ -89,10 +89,10 @@ def _print_sequence_aa(sequence):
         int('11111111', 2): '-',
 
         # official conventions:
-        # int('01001100', 2): '-',  # negatively charged
-        # int('00101100', 2): 'B',  # N or D
-        # int('10001100', 2): 'Z',  # E or Q
-        # int('01001001', 2): 'J',  # I or L
+        int('01001100', 2): '-',  # negatively charged
+        int('00101100', 2): 'B',  # N or D
+        int('10001100', 2): 'Z',  # E or Q
+        int('01001001', 2): 'J',  # I or L
 
         int('00100011', 2): 'p',  # \
         int('01000011', 2): 'p',  #  | - small and polar
@@ -103,9 +103,9 @@ def _print_sequence_aa(sequence):
         int('00000110', 2): 's',  # /
 
         int('00011100', 2): 'a',  # \
-        int('00101100', 2): 'a',  #  | 
-        int('01001100', 2): 'a',  #  | - polar or acidic
-        int('10001100', 2): 'a',  #  |
+        # int('00101100', 2): 'a',  #  | 
+        # int('01001100', 2): 'a',  #  | - polar or acidic
+        # int('10001100', 2): 'a',  #  |
         int('00001100', 2): 'a',  # /
 
         int('00100101', 2): '+',  # \
@@ -114,7 +114,7 @@ def _print_sequence_aa(sequence):
 
         int('00011001', 2): 'l',  # \
         int('00101001', 2): 'l',  #  |
-        int('01001001', 2): 'l',  #  | - large and hydrophobic
+        # int('01001001', 2): 'l',  #  | - large and hydrophobic
         int('10001001', 2): 'l',  #  |
         int('00001001', 2): 'l',  # /
 
@@ -208,7 +208,7 @@ def fasta_reader(fasta, header_delimiter='\t'):
         yield header, seq
 
 
-def create_h5tree(tree, h5out, fasta=None, overwrite=False, chunk_size=(1000, 100_000)):
+def dump_h5tree(tree, h5out, fasta=None, overwrite=False, chunk_size=(1000, 100_000)):
     if os.path.exists(h5out) and not overwrite:
         return
 
@@ -244,6 +244,7 @@ def create_h5tree(tree, h5out, fasta=None, overwrite=False, chunk_size=(1000, 10
         for header, seq in fr:
             alignment[lg.attrs[header[0]]] = seq2num_nt(seq)
     
+    t1 = time()
     printime(' - Creating h5Tree groups')
     traverser = tree.traverse()
     h5root = next(traverser)
@@ -267,6 +268,7 @@ def create_h5tree(tree, h5out, fasta=None, overwrite=False, chunk_size=(1000, 10
                 for ld in treef['leaf_data']:
                     g.attrs[ld] = lg.attrs[node.name]
         node.add_prop('h5node', g)
+    return t1
 
 
 def _load_tree_from_h5(tree, h5tree):
@@ -300,6 +302,8 @@ def load_h5tree(fname):
     return tree
 
 
+times = {}
+
 t = Tree()
 
 tree_len = int(sys.argv[1])  # wanted random tree length
@@ -315,20 +319,40 @@ printime('Generate random alignment')
 generate_random_alignment(t, seq_len, fasta)
 
 printime('Create h5tree')
-create_h5tree(t, f'h5tree_{base_name}.hdf5', fasta)
+t0 = time()
+t1 = dump_h5tree(t, f'h5tree_{base_name}.hdf5', fasta)
+if t1 is None:
+    t1 = time()
+times['store hdf5 alignment'] = t1 - t0
+times['create hdf5 tree'] = time() - t1
+t1 = time()
 
-del(t)  # free a bit of memory for the test
+del(t)
 
 printime('Read h5tree')
 h5tree = load_h5tree(f'h5tree_{base_name}.hdf5')
+times['read hdf5 tree'] = time() - t1
 
 printime('random access to h5tree sequences')
-wanted_leaves = choices(h5tree.get_leaf_names(), k=1000)
+for _ in range(10):
+    wanted_leaves = choices(h5tree.get_leaf_names(), k=1000)
 
-# bottle neck here!
-refs = sorted(set([(h5tree & l).props['h5node'].attrs['alignment']
-               for l in wanted_leaves]))
+    refs = sorted(set([(h5tree & l).props['h5node'].attrs['alignment']
+                for l in wanted_leaves]))
 
-print(h5tree.props['h5node'].file['leaf_data']['alignment'][refs, 400:600])
+    t1 = time()
+    print(h5tree.props['h5node'].file['leaf_data']['alignment'][refs, 400:600])
+    times.setdefault('random access alignment', []).append(time() - t1)
+
+log = open(f'h5test_{base_name}.log', 'w')
+for k in times:
+    if k == 'random access alignment':
+        log.write(f'{k}\t{",".join(str(t) for t in times[k])}\n')
+    else:
+        log.write(f'{k}\t{times[k]}\n')
+log.close()
+
+# clean 
+os.system(f'rm -f h5tree_{base_name}.hdf5')
 
 printime('Done.')

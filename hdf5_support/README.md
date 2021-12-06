@@ -1,17 +1,34 @@
 # Notes
 
-## performance issues
-
-### Alignment
+## Alignment
 
   - Sequence stored in numeric format (int8) may be more efficient and allow hack for generating pseudo consensus sequences.
-  - chunk size is very relevant parameter 
+  - HDF5 chunk size should be relatively small
+  - consensus sequences computed by bitwise AND over a numpy matrix
+
+## Benchmarking
+
+### Tree size
+
+![](plots/benchmark_alignment-retrieval_VS_Tree-size.png)
+
+### Alignment size
+
+![](plots/benchmark_alignment-retrieval_VS_alignment-size.png)
+
+### Alignment Query (grouped in the alignment matrix or random rows)
+
+![](plots/benchmark_random_alignment_retrieval.png)
+
+### Alignemnt matrix Chunk size HDF5 storage
 
 __TODO__:
 - benchmark chunk size **in both dimensions**
-- benchmark random access with
-  - sequence length from 10K to 10M
-  - tree length from 1K to 1M (1M leaves x 10M bp will not be possible :P)
+
+### Compute consensus sequence
+
+![](plots/benchmark_consensus_sequence.png)
+
 
 ### Tree depth and complexity:
 
@@ -25,11 +42,6 @@ __TODO__:
   - leaves grouped in the alignment matrix
   - retrieve all at once or one by one
 
-__Other solutions (kind of deprecated as its so fast with latest libver)__:
- - implement tree by level (distance from the root in terms of number of intermediate nodes)
-    - GOOD: all nodes in a given level will be available at the same time for fast transversal query
-    - BAD: adds a layer of complexity for loading data
-    - BAD: harder to reorganize trees
 
 ### Potentially slow or difficult reordering
 
