@@ -19,7 +19,11 @@ h5nodes stored using hdf5 group hierarchy, each group is a Tree node (_may be ov
 
 With `h5py.File(..., libver='latest')` tree size is no longer a problem (tree with 100K leaves created in less than a minute vs **1 hour for 10times less**)
 
-__TODO__: understand why alignment size matters in terms of performance when creating h5Tree
+__TODO__: 
+- understand why alignment size matters in terms of performance when creating h5Tree
+- check how querying form affect performance:
+  - leaves grouped in the alignment matrix
+  - retrieve all at once or one by one
 
 __Other solutions (kind of deprecated as its so fast with latest libver)__:
  - implement tree by level (distance from the root in terms of number of intermediate nodes)

@@ -23,25 +23,158 @@ def printime(msg):
           ']')
 
 
-def seq2num(seq):
-    """
-    Converts nucleotide symbols to 8-bits intergers
 
-    bits correspond to:
-    A
-    C
-    G
-    T
-    N
+def seq2num_aa(seq):
+    """
+    Converts amino-acid symbols to 8-bits intergers.
+    Consensus through bitwise AND will give rise to some groups based
+    on BLOSUM62 matrix.
     """
     conv = {
-        'A': int('10000', 2),
-        'C': int('00010', 2),
-        'G': int('00110', 2),
-        'T': int('11000', 2),
-        '-': int('00000', 2),
+        int('00110011', 2): 'C',  # \
+        int('01100011', 2): 'S',  #  | - small and polar
+        int('11000011', 2): 'R',  # /
+        int('00110110', 2): 'P',  # \
+        int('01100110', 2): 'A',  #  | - small and non-polar
+        int('11000110', 2): 'G',  # /
+        int('00111100', 2): 'N',  # \
+        int('01101100', 2): 'D',  #  | _ polar or acidic
+        int('11001100', 2): 'E',  #  |
+        int('10011100', 2): 'Q',  # /
+        int('00110101', 2): 'H',  # \
+        int('01100101', 2): 'R',  #  | - basic
+        int('11000101', 2): 'K',  # /
+        int('00111001', 2): 'M',  # \
+        int('01101001', 2): 'L',  #  |_ large and hydrophobic
+        int('11001001', 2): 'I',  #  |
+        int('10011001', 2): 'V',  # /
+        int('00111010', 2): 'F',  # \
+        int('01101010', 2): 'Y',  #  | - aromatic
+        int('11001010', 2): 'W',  # /
+        int('00000000', 2): 'X',
+        int('11111111', 2): '-',
     }
     return np.array([conv[n] for n in seq], dtype='int8')
+
+
+def _print_sequence_aa(sequence):
+    rev_conv = {
+        int('00110011', 2): 'C',  # \
+        int('01100011', 2): 'S',  #  | - small and polar
+        int('11000011', 2): 'R',  # /
+
+        int('00110110', 2): 'P',  # \
+        int('01100110', 2): 'A',  #  | - small and non-polar
+        int('11000110', 2): 'G',  # /
+
+        int('00111100', 2): 'N',  # \
+        int('01101100', 2): 'D',  #  | _ polar or acidic
+        int('11001100', 2): 'E',  #  |
+        int('10011100', 2): 'Q',  # /
+
+        int('00110101', 2): 'H',  # \
+        int('01100101', 2): 'R',  #  | - basic
+        int('11000101', 2): 'K',  # /
+
+        int('00111001', 2): 'M',  # \
+        int('01101001', 2): 'L',  #  |_ large and hydrophobic
+        int('11001001', 2): 'I',  #  |
+        int('10011001', 2): 'V',  # /
+
+        int('00111010', 2): 'F',  # \
+        int('01101010', 2): 'Y',  #  | - aromatic
+        int('11001010', 2): 'W',  # /
+
+        int('00000000', 2): 'X',
+        int('11111111', 2): '-',
+
+        # official conventions:
+        # int('01001100', 2): '-',  # negatively charged
+        # int('00101100', 2): 'B',  # N or D
+        # int('10001100', 2): 'Z',  # E or Q
+        # int('01001001', 2): 'J',  # I or L
+
+        int('00100011', 2): 'p',  # \
+        int('01000011', 2): 'p',  #  | - small and polar
+        int('00000011', 2): 'p',  # /
+
+        int('00100110', 2): 's',  # \
+        int('01000110', 2): 's',  #  | - small and non-polar
+        int('00000110', 2): 's',  # /
+
+        int('00011100', 2): 'a',  # \
+        int('00101100', 2): 'a',  #  | 
+        int('01001100', 2): 'a',  #  | - polar or acidic
+        int('10001100', 2): 'a',  #  |
+        int('00001100', 2): 'a',  # /
+
+        int('00100101', 2): '+',  # \
+        int('01000101', 2): '+',  #  | - basic
+        int('00000101', 2): '+',  # /
+
+        int('00011001', 2): 'l',  # \
+        int('00101001', 2): 'l',  #  |
+        int('01001001', 2): 'l',  #  | - large and hydrophobic
+        int('10001001', 2): 'l',  #  |
+        int('00001001', 2): 'l',  # /
+
+        int('00100101', 2): 'o',  # \
+        int('01000101', 2): 'o',  #  | - aromatic
+        int('00000101', 2): 'o',  # /
+
+        # everything else is also X...
+    }
+    return ''.join(rev_conv.get(s, 'X') for s in sequence)
+
+
+def seq2num_nt(seq):
+    """
+    Converts nucleotide symbols to 8-bits intergers
+    """
+    conv = {
+        'A': int('10010001', 2),
+        'C': int('10100010', 2),
+        'G': int('01000111', 2),
+        'T': int('01111000', 2),
+        'W': int('00010000', 2),  # A or T
+        'S': int('00000010', 2),  # C or G
+        'R': int('00000000', 2),  # A or G
+        'Y': int('00100000', 2),  # C or T
+        'K': int('01000000', 2),  # G or T
+        'M': int('10000000', 2),  # A or C
+        'N': int('00000000', 2),
+        '-': int('11111111', 2),
+    }
+    return np.array([conv[n] for n in seq], dtype='int8')
+
+
+def consensus(sequences):
+    """
+    returns consensus sequence of an alignment as an array of int-8
+
+    :param sequences: numpy 2D array of dtype int-8 (rows are individual 
+       sequences)
+    """
+    return np.bitwise_and.reduce(sequences)
+
+
+def _print_sequence_nt(sequence):
+    rev_conv = {
+        int('10010001', 2): 'A',
+        int('10100010', 2): 'C',
+        int('01000111', 2): 'G',
+        int('01111000', 2): 'T',
+        int('00010000', 2): 'W',  # A or T
+        int('00000010', 2): 'S',  # C or G
+        int('00000000', 2): 'R',  # A or G
+        int('00100000', 2): 'Y',  # C or T
+        int('01000000', 2): 'K',  # G or T
+        int('10000000', 2): 'M',  # A or C
+        int('00000000', 2): 'N',
+        int('11111111', 2): '-',
+    }
+    return ''.join(rev_conv[s] for s in sequence)
+
 
 
 def generate_random_alignment(tree, seq_len, fname, overwrite=False):
@@ -75,7 +208,7 @@ def fasta_reader(fasta, header_delimiter='\t'):
         yield header, seq
 
 
-def create_h5tree(tree, h5out, fasta=None, overwrite=False):
+def create_h5tree(tree, h5out, fasta=None, overwrite=False, chunk_size=(1000, 100_000)):
     if os.path.exists(h5out) and not overwrite:
         return
 
@@ -101,14 +234,17 @@ def create_h5tree(tree, h5out, fasta=None, overwrite=False):
     if fasta:
         # get sequence length
         # initialize alignment dataset
+        printime(' - Dumping FASTA to hdf5 alignment group')
         fr = fasta_reader(fasta)
         header, seq = next(fr)
-        alignment = lg.create_dataset('alignment', (tree_len, len(seq)), dtype='int8', 
-                                      chunks=(tree_len, min(len(seq), 10_000))) #, compression='gzip', compression_opts=7)
-        alignment[lg.attrs[header[0]]] = seq2num(seq)
+        alignment = lg.create_dataset(
+            'alignment', (tree_len, len(seq)), dtype='int8', 
+            chunks=(min(tree_len, chunk_size[0]), min(len(seq), chunk_size[1]))) #, compression='gzip', compression_opts=7)
+        alignment[lg.attrs[header[0]]] = seq2num_nt(seq)
         for header, seq in fr:
-            alignment[lg.attrs[header[0]]] = seq2num(seq)
-
+            alignment[lg.attrs[header[0]]] = seq2num_nt(seq)
+    
+    printime(' - Creating h5Tree groups')
     traverser = tree.traverse()
     h5root = next(traverser)
     root = treef.create_group("tree")
@@ -168,23 +304,28 @@ t = Tree()
 
 tree_len = int(sys.argv[1])  # wanted random tree length
 seq_len  = int(sys.argv[2])  # wanted random sequences length
+chunk_size = int(sys.argv[3]), int(sys.argv[4])  # for storing alignment
 
 t.populate(tree_len, names_library=map(str, range(tree_len + 1)))
-
-fasta  = f'alignment_{len(t)}leaves_{int(seq_len / 1_000_000)}Mbp.fasta'
+base_name_fasta = f'{len(t)}leaves_{int(seq_len / 1_000)}Kbp'
+base_name = f'{len(t)}leaves_{int(seq_len / 1_000)}Kbp_chunks{chunk_size[0]}-{chunk_size[1]}'
+fasta  = f'alignment_{base_name_fasta}.fasta'
 
 printime('Generate random alignment')
 generate_random_alignment(t, seq_len, fasta)
 
 printime('Create h5tree')
-create_h5tree(t, f'h5tree_{len(t)}leaves_{int(seq_len / 1_000_000)}Mbp.hdf5', fasta)
+create_h5tree(t, f'h5tree_{base_name}.hdf5', fasta)
+
+del(t)  # free a bit of memory for the test
 
 printime('Read h5tree')
-h5tree = load_h5tree(f'h5tree_{len(t)}leaves_{int(seq_len / 1_000_000)}Mbp.hdf5')
+h5tree = load_h5tree(f'h5tree_{base_name}.hdf5')
 
 printime('random access to h5tree sequences')
-wanted_leaves = choices(h5tree.get_leaf_names(), k=100)
+wanted_leaves = choices(h5tree.get_leaf_names(), k=1000)
 
+# bottle neck here!
 refs = sorted(set([(h5tree & l).props['h5node'].attrs['alignment']
                for l in wanted_leaves]))
 
