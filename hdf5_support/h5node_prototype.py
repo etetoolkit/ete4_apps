@@ -132,16 +132,18 @@ def seq2num_nt(seq):
     Converts nucleotide symbols to 8-bits intergers
     """
     conv = {
-        'A': int('10010001', 2),
-        'C': int('10100010', 2),
-        'G': int('01000111', 2),
-        'T': int('01111000', 2),
-        'W': int('00010000', 2),  # A or T
+        'A': int('00100101', 2),
+        'C': int('01101010', 2),
+        'G': int('10010110', 2),
+        'T': int('11011001', 2),
+
+        'W': int('00000001', 2),  # A or T
         'S': int('00000010', 2),  # C or G
-        'R': int('00000000', 2),  # A or G
-        'Y': int('00100000', 2),  # C or T
-        'K': int('01000000', 2),  # G or T
-        'M': int('10000000', 2),  # A or C
+        'R': int('00000100', 2),  # A or G
+        'Y': int('01001000', 2),  # C or T
+        'K': int('10010000', 2),  # G or T
+        'M': int('00100000', 2),  # A or C
+
         'N': int('00000000', 2),
         '-': int('11111111', 2),
     }
@@ -160,18 +162,21 @@ def consensus(sequences):
 
 def _print_sequence_nt(sequence):
     rev_conv = {
-        int('10010001', 2): 'A',
-        int('10100010', 2): 'C',
-        int('01000111', 2): 'G',
-        int('01111000', 2): 'T',
-        int('00010000', 2): 'W',  # A or T
+        int('00100101', 2): 'A',
+        int('01101010', 2): 'C',
+        int('10010110', 2): 'G',
+        int('11011001', 2): 'T',
+
+        int('00000001', 2): 'W',  # A or T
         int('00000010', 2): 'S',  # C or G
-        int('00000000', 2): 'R',  # A or G
-        int('00100000', 2): 'Y',  # C or T
-        int('01000000', 2): 'K',  # G or T
-        int('10000000', 2): 'M',  # A or C
+        int('00000100', 2): 'R',  # A or G
+        int('01001000', 2): 'Y',  # C or T
+        int('10010000', 2): 'K',  # G or T
+        int('00100000', 2): 'M',  # A or C
+
         int('00000000', 2): 'N',
         int('11111111', 2): '-',
+
     }
     return ''.join(rev_conv[s] for s in sequence)
 
