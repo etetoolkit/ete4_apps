@@ -22,8 +22,14 @@
 
 ### Alignemnt matrix Chunk size HDF5 storage
 
-__TODO__:
-- benchmark chunk size **in both dimensions**
+#### Chunk size -> number of rows (leaves)
+
+![](plots/benchmark_alignment-retrieval_VS_tree-chunk-size.png)
+
+#### Chunk size -> number of columns
+
+![](plots/benchmark_alignment-retrieval_VS_alignment-chunk-size.png)
+
 
 ### Compute consensus sequence
 

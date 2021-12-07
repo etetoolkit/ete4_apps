@@ -353,6 +353,6 @@ for k in times:
 log.close()
 
 # clean 
-os.system(f'rm -f h5tree_{base_name}.hdf5')
+# os.system(f'rm -f h5tree_{base_name}.hdf5')
 
 printime('Done.')
